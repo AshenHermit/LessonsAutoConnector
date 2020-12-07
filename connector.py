@@ -16,8 +16,6 @@ class Connector:
         self.chrome_options.add_argument("user-data-dir=C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data")
         self.browser = Browser('chrome', options=self.chrome_options)
 
-        self.browser.visit("https://dnevnik.mos.ru/diary/diary/lessons")
-
         self.lessons = []
         self.lessonEls = None
 
@@ -52,7 +50,7 @@ class Connector:
 
     def connect_to_next_lesson(self):
         finded = None
-        # finded = lessons[5]
+        #finded = lessons[6]
         while not finded:
             t = datetime.datetime.now().time()
             for l in lessons:
@@ -67,6 +65,7 @@ class Connector:
         self.wait_click('*[class="css-1dbjc4n r-1loqt21 r-p1pxzi r-dnmrzs r-1otgn73 r-eafdt9 r-1i6wzkk r-lrvibr r-fsuzt3"')
 
         self.browser.windows.current = self.browser.windows[1]
+        self.browser.windows[0].close()
 
         self.wait_click('*[data-tid="joinOnWeb"')
 
@@ -80,16 +79,20 @@ class Connector:
             if (t.hour > finded['end_time'][0]) or (t.hour == finded['end_time'][0] and t.minute >= finded['end_time'][1]-15):
                 guys = self.browser.find_by_css('*[class="item vs-repeat-repeated-element"')
                 if guys:
-                    if len(guys) <= 3:
+                    if len(guys) <= 4:
                         ended = True
+
+            if (t.hour == finded['end_time'][0] and t.minute >= finded['end_time'][1]):
+                ended = True
 
             time.sleep(0.5)
 
-        self.wait_click('*[data-tid="call-hangup"]')
-        self.browser.windows[1].close
-        self.browser.windows.current = self.browser.windows[0]
+        #self.wait_click('*[data-tid="call-hangup"]')
 
     def start(self):
+        diary = "https://dnevnik.mos.ru/diary/diary/lessons"
+        self.browser.visit(diary)
         while True:
             self.gather_lessons()
             self.connect_to_next_lesson()
+            self.browser.visit(diary)
