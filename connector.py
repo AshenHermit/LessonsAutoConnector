@@ -31,34 +31,44 @@ class Connector:
         for l in lessonEls:
             result = re.match(r'\d\n(.*?):(.*?) — (.*?):(.*?)\n', l.text)
             if result:
-                lessons.append({'el':l, 'start_time': [int(result[1]), int(result[2])], 'end_time':[int(result[3]), int(result[4])]})
+                lessons.append({'el':l, 
+                    'start_time': [int(result[1])*60 + int(result[2]), int(result[1]), int(result[2])], 
+                    'end_time':   [int(result[3])*60 + int(result[4]), int(result[3]), int(result[4])]})
 
         print(lessonEls)
 
-    def wait_click(self, query):
+    def wait_click(self, query, id=0):
         button = None
         while not button:
             button = self.browser.find_by_css(query)
-        button[0].click()
+        button[id].click()
 
-    def wait_input(self, query, text):
+    def wait_input(self, query, text, id=0):
         input = None
         while not input:
             input = self.browser.find_by_css(query)
-        input[0].value = text
+        input[id].value = text
+
+    def get_current_time(self):
+        t = datetime.datetime.now().time()
+        t = t.hour * 60 + t.minute
+        return t
 
 
     def connect_to_next_lesson(self):
         finded = None
-        #finded = lessons[6]
+
+        ## set custom lesson
+        # finded = lessons[0]
+   
         while not finded:
-            t = datetime.datetime.now().time()
+            t = self.get_current_time()
             for l in lessons:
-                if t.hour >= l['start_time'][0] and t.minute >= l['start_time'][1]\
-                and (t.hour < l['end_time'][0] or (t.hour == l['end_time'][0] and t.minute <= l['end_time'][1]-16)):
+                if t >= l['start_time'][0]\
+                and t <= l['end_time'][0]-16:
                     finded = l
 
-            time.sleep(0.5)
+            time.sleep(2)
                     
         finded['el'].click()
 
@@ -67,22 +77,28 @@ class Connector:
         self.browser.windows.current = self.browser.windows[1]
         self.browser.windows[0].close()
 
+        # "продолжить в этом браузере"
         self.wait_click('*[data-tid="joinOnWeb"')
 
+        # "продолжить без звука и видео"
+        self.wait_click('*[class="ts-btn ts-btn-fluent ts-btn-fluent-secondary-alternate"]')
+
+        # username input
         self.wait_input('#username', self.username)
 
+        # join bradcast
         self.wait_click('*[data-tid="prejoin-join-button"')
 
         ended = False
         while not ended:
-            t = datetime.datetime.now().time()
-            if (t.hour > finded['end_time'][0]) or (t.hour == finded['end_time'][0] and t.minute >= finded['end_time'][1]-15):
+            t = self.get_current_time()
+            if t >= finded['end_time'][0]-15:
                 guys = self.browser.find_by_css('*[class="item vs-repeat-repeated-element"')
                 if guys:
                     if len(guys) <= 4:
                         ended = True
 
-            if (t.hour == finded['end_time'][0] and t.minute >= finded['end_time'][1]):
+            if t >= finded['end_time'][0]:
                 ended = True
 
             time.sleep(0.5)
