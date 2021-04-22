@@ -72,13 +72,13 @@ class Connector:
                     
         finded['el'].click()
 
-        self.wait_click('*[class="css-1dbjc4n r-1loqt21 r-p1pxzi r-dnmrzs r-1otgn73 r-eafdt9 r-1i6wzkk r-lrvibr r-fsuzt3"')
+        self.wait_click('.MuiButtonBase-root.MuiButton-root.MuiButton-contained.MuiButton-containedPrimary')
 
         self.browser.windows.current = self.browser.windows[1]
         self.browser.windows[0].close()
 
         # "продолжить в этом браузере"
-        self.wait_click('*[data-tid="joinOnWeb"')
+        self.wait_click('*[data-tid="joinOnWeb"]')
 
         # "продолжить без звука и видео"
         self.wait_click('*[class="ts-btn ts-btn-fluent ts-btn-fluent-secondary-alternate"]')
@@ -87,13 +87,13 @@ class Connector:
         self.wait_input('#username', self.username)
 
         # join bradcast
-        self.wait_click('*[data-tid="prejoin-join-button"')
+        self.wait_click('*[data-tid="prejoin-join-button"]')
 
         ended = False
         while not ended:
             t = self.get_current_time()
             if t >= finded['end_time'][0]-15:
-                guys = self.browser.find_by_css('*[class="item vs-repeat-repeated-element"')
+                guys = self.browser.find_by_css('*[class="item vs-repeat-repeated-element"]')
                 if guys:
                     if len(guys) <= 4:
                         ended = True
@@ -108,6 +108,7 @@ class Connector:
     def start(self):
         diary = "https://dnevnik.mos.ru/diary/diary/lessons"
         self.browser.visit(diary)
+        
         while True:
             self.gather_lessons()
             self.connect_to_next_lesson()
